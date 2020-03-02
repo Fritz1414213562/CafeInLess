@@ -1,0 +1,6 @@
+#ifndef CAFEINLESS_S_DENS_BW
+#define CAFEINLESS_S_DENS_BW
+#include<CafeInLess/analysis.dir/clustering_validation/S_Dens_bw.hpp>
+#include<CafeInLess/analysis.dir/clustering_validation/S_Dens_bw_Flag.hpp>
+
+#endif /* CAFEINLESS_S_DENS_BW */

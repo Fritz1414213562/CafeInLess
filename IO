@@ -1,0 +1,9 @@
+#ifndef CAFEINLESS_INPUT_OUTPUT
+#define CAFEINLESS_INPUT_OUTPUT
+#include<CafeInLess/IO.dir/ErrorMessage.hpp>
+#include<CafeInLess/IO.dir/StandardOutput.hpp>
+//#include<CafeInLess/IO.dir/MatrixFileParser.hpp>
+//#include<CafeInLess/IO.dir/MatrixFileReader.hpp>
+//#include<CafeInLess/IO.dir/Parser.hpp>
+
+#endif /* CAFEINLESS_INPUT_OUTPUT */

@@ -1,0 +1,24 @@
+#ifndef CAFEINLESS_CLUSTERING
+#define CAFEINLESS_CLUSTERING
+
+// interface
+#include<CafeInLess/analysis.dir/clustering_device/Clustering.hpp>
+
+
+// clustering methods
+
+#include<CafeInLess/analysis.dir/clustering_device/KMeans>
+
+
+namespace CafeInLess::analysis {
+
+// alias
+
+template<KMeans_Flag Dist_Flag>
+using ClusteringDevice_KMeans = ClusteringDevice<KMeans<Dist_Flag>>;
+
+
+}
+
+
+#endif /* CAFEINLESS_CLUSTERING */

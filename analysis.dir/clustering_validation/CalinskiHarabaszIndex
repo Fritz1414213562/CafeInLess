@@ -1,0 +1,6 @@
+#ifndef CAFEINLESS_CALINSKI_HARABASZ_INDEX
+#define CAFEINLESS_CALINSKI_HARABASZ_INDEX
+#include<CafeInLess/analysis.dir/clustering_validation/CalinskiHarabaszIndex.hpp>
+#include<CafeInLess/analysis.dir/clustering_validation/CalinskiHarabaszIndex_Flag.hpp>
+
+#endif /* CAFEINLESS_CALINSKI_HARABASZ_INDEX */

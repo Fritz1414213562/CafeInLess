@@ -1,0 +1,7 @@
+#ifndef CAFEINLESS_UTILITY
+#define CAFEINLESS_UTILITY
+#include<CafeInLess/util.dir/arithmetic>
+#include<CafeInLess/util.dir/strmanage.hpp>
+#include<CafeInLess/util.dir/filemanage.hpp>
+
+#endif /* CAFEINLESS_UTILITY */

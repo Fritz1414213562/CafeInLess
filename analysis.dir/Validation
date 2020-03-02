@@ -1,0 +1,28 @@
+#ifndef CAFEINLESS_VALIDATION
+#define CAFEINLESS_VALIDATION
+
+// interface
+#include<CafeInLess/analysis.dir/clustering_validation/Validation.hpp>
+
+
+// validity index
+
+#include<CafeInLess/analysis.dir/clustering_validation/S_Dens_bw>
+#include<CafeInLess/analysis.dir/clustering_validation/CalinskiHarabaszIndex>
+
+
+namespace CafeInLess::analysis {
+
+// alias
+
+
+template<S_Dens_bw_Flag Dist_Flag>
+using ClusteringValidation_SDBW = ClusteringValidation<S_Dens_bw<Dist_Flag>>;
+
+template<CH_Index_Flag Dist_Flag>
+using ClusteringValidation_CH = ClusteringValidation<CalinskiHarabaszIndex<Dist_Flag>>;
+
+
+}
+
+#endif /* CAFEINLESS_VALIDATION */

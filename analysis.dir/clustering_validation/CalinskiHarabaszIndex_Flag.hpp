@@ -1,0 +1,16 @@
+#ifndef CAFEINLESS_CALINSKI_HARABASZ_INDEX_FLAG_HPP
+#define CAFEINLESS_CALINSKI_HARABASZ_INDEX_FLAG_HPP
+
+
+namespace CafeInLess::analysis {
+
+enum CH_Index_Flag {
+
+	CH_DIST_L1,
+	CH_DIST_L2,
+
+};
+
+}
+
+#endif /* CAFEINLESS_CALINSKI_HARABASZ_INDEX_FLAG_HPP */

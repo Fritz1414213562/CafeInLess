@@ -1,0 +1,8 @@
+#ifndef K_MEANS
+#define K_MEANS
+#include<CafeInLess/analysis.dir/clustering_device/KMeans.hpp>
+#include<CafeInLess/analysis.dir/clustering_device/KMeans_Flag.hpp>
+//#include<analysis/KMeans_Type.hpp>
+
+
+#endif /* K_MEANS */

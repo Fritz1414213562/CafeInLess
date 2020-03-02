@@ -1,0 +1,6 @@
+#ifndef CAFEINLESS_ANALYSIS
+#define CAFEINLESS_ANALYSIS
+#include<CafeInLess/analysis.dir/Clustering>
+#include<CafeInLess/analysis.dir/Validation>
+
+#endif /* CAFEINLESS_ANALYSIS */

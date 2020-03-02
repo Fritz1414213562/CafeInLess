@@ -1,0 +1,10 @@
+#ifndef CAFEINLESS_ARITHMETIC
+#define CAFEINLESS_ARITHMETIC
+
+#include<CafeInLess/util.dir/arithmetic.hpp.dir/centroids.hpp>
+#include<CafeInLess/util.dir/arithmetic.hpp.dir/distance.hpp>
+#include<CafeInLess/util.dir/arithmetic.hpp.dir/vecmanage.hpp>
+
+
+
+#endif /* CAFEINLESS_ARITHMETIC */
