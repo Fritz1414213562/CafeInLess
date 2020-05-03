@@ -1,11 +1,8 @@
-#ifndef K_MEANS_HPP
-#define K_MEANS_HPP
+#ifndef CAFEINLESS_K_MEANS_HPP
+#define CAFEINLESS_K_MEANS_HPP
 #include<CafeInLess/analysis.dir/clustering_device/KMeans_Flag.hpp>
-#include<CafeInLess/analysis.dir/clustering_device/ClusteringDevice_interface.hpp>
-//#include<KMeans_Type.hpp>
-#include<CafeInLess/IO.dir/ErrorMessage.hpp>
-#include<CafeInLess/IO.dir/StandardOutput.hpp>
-#include<CafeInLess/util.dir/arithmetic>
+#include<CafeInLess/analysis.dir/clustering_device/ClusteringDevice_Base.hpp>
+#include<coffee-makers/Containers/Containers.hpp>
 #include<vector>
 #include<random>
 #include<string>
@@ -16,28 +13,35 @@
 namespace CafeInLess::analysis {
 
 
-template<KMeans_Flag DIST_FLAG>
-class KMeans : ClusteringDeviceInterface<KMeans<DIST_FLAG>> {
+template<KMeans_Flag DIST_FLAG, typename scalarT>
+class KMeans : ClusteringDeviceBase<KMeans<DIST_FLAG, scalarT>> {
 
 public:
 
-	KMeans(const std::size_t& cluster_number_k, const std::size_t& iteration_num, const std::size_t& n_seed):
+//	using scalar_type = scalarT;
+
+private:
+
+using MatX = makers::Matrix<scalarT, makers::Variable, makers::Variable>;
+using VecX = makers::Vector<scalarT, makers::Variable>;
+
+public:
+
+	KMeans(const int& cluster_number_k, const int& iteration_num, const int& n_seed):
 	cluster_number(cluster_number_k),
 	MAX_ITERATION_NUM(iteration_num),
 	random_seed(n_seed) {
-		if ((cluster_number < 1) || (cluster_number > MAX_CLUSTER_NUMBER)) {
-			eout("too much or less cluster number, " + std::to_string(cluster_number));
-		}
+		if ((cluster_number < 1) || (cluster_number > MAX_CLUSTER_NUMBER))
+			throw std::invalid_argument("too much or less cluster number.");
 	}
 
-	KMeans(const std::size_t& cluster_number_k, const std::size_t& iteration_num, const std::size_t& n_seed, const float& cutoff):
+	KMeans(const int& cluster_number_k, const int& iteration_num, const int& n_seed, const scalarT& cutoff):
 	cluster_number(cluster_number_k),
 	MAX_ITERATION_NUM(iteration_num),
 	random_seed(n_seed),
 	CUTOFF_SIMILARITY(cutoff) {
-		if ((cluster_number < 1) || (cluster_number > MAX_CLUSTER_NUMBER)) {
-			eout("too much or less cluster number, " + std::to_string(cluster_number));
-		}
+		if ((cluster_number < 1) || (cluster_number > MAX_CLUSTER_NUMBER))
+			throw std::invalid_argument("too much or less cluster number.");
 	}
 
 	~KMeans() = default;
@@ -45,41 +49,45 @@ public:
 
 
 
-	std::vector<std::vector<std::size_t>> run(const std::vector<std::vector<float>>& all_data) {
+	std::vector<std::vector<int>> run(const MatX& all_data) const {
 
 		if (isDebugMode) {
-			sout("k-means clustering starts.");
-			sout("Initialization Methods: ++");
+			std::cout << "k-means clustering starts." << std::endl;
+			std::cout << "Initialization Methods: ++" << std::endl;
 			if (DIST_FLAG == CafeInLess::analysis::KMEANS_DIST_L2) {
-				sout("Distance Calculation Methods: Euclidean Distance");
+				std::cout << "Distance Calculation Methods: Euclidean Distance" << std::endl;
 			}
 		}
 
 
 
-		if (isDebugMode) sout("Initial Clusters");
-		const std::vector<std::vector<std::size_t>>& initial_cluster_indices_set = init_Cluster(all_data);
-	//	for (const std::vector<std::size_t>& indices : initial_cluster_indices_set) {
-	//		sout(indices.size());
-	//	}
+		if (isDebugMode) std::cout << "Initial Clusters" << std::endl;
+		const std::vector<std::vector<int>>& initial_cluster_indices_set = init_Cluster(all_data);
+		if (isDebugMode) {
+			for (const std::vector<int>& initial_cluster_indices : initial_cluster_indices_set)
+				std::cout << initial_cluster_indices.size() << std::endl;
+		}
 
-		if (isDebugMode) sout("Initial Centroids");
-		std::vector<std::vector<float>> centroids = calc_Centroids(all_data, initial_cluster_indices_set);
+		if (isDebugMode) std::cout << "Initial Centroids" << std::endl;
+		MatX centroids = calc_Centroids(all_data, initial_cluster_indices_set);
 
-		if (isDebugMode) sout("Iteration starts.");
+		if (isDebugMode) std::cout << "Iteration starts." << std::endl;
 		bool is_to_succeed = false;
-		std::size_t iterated_num = 1;
-		std::vector<std::vector<std::size_t>> result(cluster_number);
+		int iterated_num = 1;
+		std::vector<std::vector<int>> result(cluster_number);
+	//	std::cout << MAX_ITERATION_NUM << std::endl;
 
-		for (std::size_t i_updated = 0; i_updated < MAX_ITERATION_NUM; ++i_updated) {
-			const std::vector<std::vector<std::size_t>>& clustered_indices_set = classify_AllDataIntoClusters(all_data, centroids);
-//			for (const std::vector<std::size_t>& indices : clustered_indices_set) {
-//				sout(indices.size());
-//			}
-			const std::vector<std::vector<float>>& updated_centroids = calc_Centroids(all_data, clustered_indices_set);
+		for (int i_updated = 0; i_updated < MAX_ITERATION_NUM; ++i_updated) {
+			const std::vector<std::vector<int>>& clustered_indices_set = classify(all_data, centroids);
+			const MatX& updated_centroids = calc_Centroids(all_data, clustered_indices_set);
 
-			const std::vector<float>& centroids_dist = calc_DifferenceBWOldNewCentroids(centroids, updated_centroids);
-			if (CafeInLess::arithmetic::is_similar20vec(centroids_dist, CUTOFF_SIMILARITY)) {
+			const VecX& centroids_diff = calc_CentroidsDiff(centroids, updated_centroids);
+			if (isDebugMode) {
+				for (int idx = 0; idx < centroids_diff.size(); ++idx)
+					std::cout << centroids_diff[idx] << std::endl;
+			}
+
+			if (is_same_centroid(centroids_diff)) {
 				result = clustered_indices_set;
 				is_to_succeed = true;
 				break;
@@ -90,10 +98,9 @@ public:
 			++iterated_num;
 		}
 
-		if (!is_to_succeed) {
-			eout("Iteration is finished, but not succeeded. You should cycle more or change cutoff similarity");
-		}
-		else if (isDebugMode) sout("Iterated number is " + std::to_string(iterated_num));
+		if (isDebugMode) std::cout << "Iterated number is " << iterated_num << std::endl;
+		if (!is_to_succeed)
+			throw std::runtime_error("The iteration is insufficient.");
 
 		return result;
 	}
@@ -111,75 +118,85 @@ public:
 
 private:
 
-	const std::size_t cluster_number;
-	const std::size_t& MAX_ITERATION_NUM = 100;
-	const std::size_t& random_seed = 100000000;
-	const float& CUTOFF_SIMILARITY = std::numeric_limits<float>::min();
+	const int cluster_number;
+	const int MAX_ITERATION_NUM = 100;
+	const int random_seed = 100000000;
+	const scalarT& CUTOFF_SIMILARITY = std::numeric_limits<scalarT>::min();
 
-	const std::size_t& MAX_CLUSTER_NUMBER = 100;
+	constexpr static int MAX_CLUSTER_NUMBER = 100;
 
 	bool isDebugMode = false;
 
 
-
-	CafeInLess::IO::Error_Output eout = CafeInLess::IO::Error_Output();
-
-	CafeInLess::IO::Standard_Output sout = CafeInLess::IO::Standard_Output();
+	template<KMeans_Flag Dist_Method, KMeans_Flag Dummy_Flag = DUMMY_FLAG>
+	struct DistanceCalculator;
 
 
 // --------------------------------------------------------------------------------------
 
 
-	const std::vector<std::vector<std::size_t>> init_Cluster(const std::vector<std::vector<float>>& all_data) {
+	std::vector<std::vector<int>> init_Cluster(const MatX& all_data) const {
 
-		const std::vector<std::size_t>& ini_cluster_nuclear_indices = choose_DistanceIndices(all_data);
-//		for (const std::size_t& chosen_id : ini_cluster_nuclear_indices) {
-//			sout(chosen_id);
-//		}
-
-	//	sout("Chosen");
-		std::vector<std::vector<float>> cluster_nuclears;
-		for (const std::size_t& ini_cluster_nuclear_index : ini_cluster_nuclear_indices) {
-			cluster_nuclears.push_back(all_data[ini_cluster_nuclear_index]);
+		const std::vector<int>& ini_cluster_nuclear_indices = choose_DistanceIndices(all_data);
+		if (isDebugMode) std::cout << "Initial centroid seeds are chosen." << std::endl;
+		if (isDebugMode) {
+			for (const int& initial_cluster_index : ini_cluster_nuclear_indices)
+				std::cout << initial_cluster_index << std::endl;
 		}
-		return classify_AllDataIntoClusters(all_data, cluster_nuclears);
+
+		MatX cluster_nuclears(cluster_number, all_data.cols());
+		for (int i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
+			const int& cluster_nuclear_idx = ini_cluster_nuclear_indices[i_cluster];
+			for (int i_datum = 0; i_datum < all_data.cols(); ++i_datum)
+				cluster_nuclears(i_cluster, i_datum) = all_data(cluster_nuclear_idx, i_datum);
+		}
+
+		if (isDebugMode) {
+			VecX cluster_0 = cluster_nuclears.row(0);
+
+			for (int i_cluster = 1; i_cluster < cluster_number; ++i_cluster) {
+				VecX cluster_i = cluster_nuclears.row(i_cluster);
+				std::cout << calc_SquareDistance(cluster_0, cluster_i) << std::endl;
+			}
+		}
+
+		return classify(all_data, cluster_nuclears);
 	}
 
 
 
 
-	const std::vector<std::size_t> choose_DistanceIndices(const std::vector<std::vector<float>>& all_data) {
+	std::vector<int> choose_DistanceIndices(const MatX& all_data) const {
 
 		std::mt19937_64 mt_engine_for_uniform_dist(random_seed);
 		std::mt19937_64 mt_engine_for_piecewise_dist(random_seed + 1);
-		std::uniform_int_distribution<> uni_int_distribution(0, all_data.size() - 1);
-		std::vector<std::size_t> result(cluster_number);
+		std::uniform_int_distribution<> uni_int_distribution(0, all_data.rows() - 1);
+		std::vector<int> result(cluster_number);
 
+		if (isDebugMode) std::cout << 0 << std::endl;
 		result[0] = uni_int_distribution(mt_engine_for_uniform_dist);
 
-		for (std::size_t i_cluster = 1; i_cluster < cluster_number; ++i_cluster) {
-			double total_dist = 0.0;
-			std::vector<double> prob_intervals(all_data.size() + 1, 0);
-			std::vector<double> prob_densities(all_data.size());
-			std::size_t datum_index = 0;
-			for (const std::vector<float>& datum : all_data) {
-				double dist = 0.0;
-				for (std::size_t chosen_cluster_id = 0; chosen_cluster_id < i_cluster; ++chosen_cluster_id) {
-					const std::vector<float> chosen_datum = all_data[result[chosen_cluster_id]];
-			//		sout(chosen_datum.size());
-			//		sout(datum.size());
-			//		sout("Refer");
-			//		const float& data_dist_bw_chosen_and_datum = calc_SquareDistance(datum, all_data[result[chosen_cluster_id]]);
-					const float& data_dist_bw_chosen_and_datum = calc_SquareDistance(datum, chosen_datum);
-					dist += static_cast<double>(data_dist_bw_chosen_and_datum);
-					total_dist += static_cast<double>(data_dist_bw_chosen_and_datum);
+		for (int i_cluster = 1; i_cluster < cluster_number; ++i_cluster) {
+			if (isDebugMode) std::cout << i_cluster << std::endl;
+			scalarT total_dist = 0.0;
+			std::vector<scalarT> prob_intervals(all_data.rows() + 1, 0);
+			std::vector<scalarT> prob_densities(all_data.rows());
+			for (int datum_index = 0; datum_index < all_data.rows(); ++datum_index) {
+			//	if (isDebugMode) std::cout << "TEST" << std::endl;
+				const VecX& datum = all_data.row(datum_index);
+				scalarT dist = 0.0;
+				for (int chosen_cluster_id = 0; chosen_cluster_id < i_cluster; ++chosen_cluster_id) {
+					const VecX& chosen_datum = all_data.row(result[chosen_cluster_id]);
+					const scalarT& data_dist = calc_SquareDistance(datum, chosen_datum);
+					dist += static_cast<scalarT>(data_dist);
+					total_dist += static_cast<scalarT>(data_dist);
 				}
-				prob_intervals[datum_index + 1] = static_cast<double>(datum_index + 1);
+				prob_intervals[datum_index + 1] = static_cast<scalarT>(datum_index + 1);
 				prob_densities[datum_index] = dist;
 				++datum_index;
 			}
 
-			for (std::size_t prob_dens_idx = 0; prob_dens_idx < prob_densities.size(); ++prob_dens_idx) {
+			for (int prob_dens_idx = 0; prob_dens_idx < static_cast<int>(prob_densities.size()); ++prob_dens_idx) {
 				prob_densities[prob_dens_idx] /= total_dist;
 			}
 
@@ -189,7 +206,7 @@ private:
 				prob_densities.begin()
 			);
 
-			const std::size_t& chosen_index = std::floor(pw_const_dist(mt_engine_for_piecewise_dist));
+			const int& chosen_index = std::floor(pw_const_dist(mt_engine_for_piecewise_dist));
 			result[i_cluster] = chosen_index;
 
 		}
@@ -200,13 +217,13 @@ private:
 
 
 
-	const std::vector<std::vector<std::size_t>> classify_AllDataIntoClusters(const std::vector<std::vector<float>>& all_data, const std::vector<std::vector<float>>& cluster_nuclears) {
+	std::vector<std::vector<int>> classify(const MatX& all_data, const MatX& cluster_nuclears) const {
 
-		std::vector<std::vector<std::size_t>> result(cluster_number);
+		std::vector<std::vector<int>> result(cluster_number);
 
-		for (std::size_t data_index = 0; data_index < all_data.size(); ++data_index) {
-			const std::vector<float>& datum = all_data[data_index];
-			const std::size_t& closest_cluster_id = calc_ClosestClusterID(datum, cluster_nuclears);
+		for (int data_index = 0; data_index < all_data.rows(); ++data_index) {
+			const VecX& datum = all_data.row(data_index);
+			const int& closest_cluster_id = search_ClosestID(datum, cluster_nuclears);
 			result[closest_cluster_id].push_back(data_index);
 		}
 		return result;
@@ -214,14 +231,14 @@ private:
 
 
 
-	const std::size_t calc_ClosestClusterID(const std::vector<float>& datum, const std::vector<std::vector<float>>& cluster_nuclears) {
+	int search_ClosestID(const VecX& datum, const MatX& cluster_nuclears) const {
 
-		std::size_t result = 0;
-		float minimal_distance = std::numeric_limits<float>::max();
+		int result = 0;
+		scalarT minimal_distance = std::numeric_limits<scalarT>::max();
 
-		for (std::size_t i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
-		//	sout(datum.size(), cluster_nuclears[i_cluster].size());
-			float dist = calc_SquareDistance(datum, cluster_nuclears[i_cluster]);
+		for (int i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
+			const VecX& cluster_nuclear = cluster_nuclears.row(i_cluster);
+			scalarT dist = calc_SquareDistance(datum, cluster_nuclear);
 			if (dist < minimal_distance) {
 				minimal_distance = dist;
 				result = i_cluster;
@@ -233,96 +250,103 @@ private:
 
 
 
-	const std::vector<std::vector<float>> calc_Centroids(const std::vector<std::vector<float>>& all_data, const std::vector<std::vector<std::size_t>>& clustered_indices_set) {
+	MatX calc_Centroids(const MatX& all_data, const std::vector<std::vector<int>>& clustered_indices_set) const {
 
-		std::vector<std::vector<float>> result(cluster_number);
+		MatX result(cluster_number, all_data.cols());
 
-		for (std::size_t i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
-			result[i_cluster] = calc_ClusterCentroid(all_data, clustered_indices_set[i_cluster]);
+		for (int i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
+			const VecX& cluster_centroid = calc_ClusterCentroid(all_data, clustered_indices_set[i_cluster]);
+			for (int i_datum = 0; i_datum < all_data.cols(); ++i_datum)
+				result(i_cluster, i_datum) = cluster_centroid[i_datum];
 		}
+
 		return result;
 	}
 
 
 
-	const std::vector<float> calc_ClusterCentroid(const std::vector<std::vector<float>>& all_data, const std::vector<std::size_t>& clustered_indices) {
+	VecX calc_ClusterCentroid(const MatX& all_data, const std::vector<int>& clustered_indices) const {
 
-		std::vector<std::vector<float>> data_in_cluster;
-		for (std::size_t index = 0; index < clustered_indices.size(); ++index) {
-			const std::size_t& clustered_index = clustered_indices[index];
-			data_in_cluster.push_back(all_data[clustered_index]);
-		}
-//		sout("data_in_cluster size ", data_in_cluster.size());
+		if (clustered_indices.size() <= 0)
+			throw std::runtime_error(
+			"A cluster in which has no component exists. Due to the data scattering, such a cluster arise. Please try clustering again with another random seed.");
 
-		return calc_GeometricCentroid(data_in_cluster);
+		VecX result(all_data.cols(), 1);
 
+		for (const int& clustered_index : clustered_indices)
+			result += all_data.row(clustered_index);
+		result /= static_cast<scalarT>(clustered_indices.size());
+
+		return result;
 	}
 
 
 
-	const std::vector<float> calc_DifferenceBWOldNewCentroids(const std::vector<std::vector<float>>& old_centroids, const std::vector<std::vector<float>>& new_centroids) {
+	VecX calc_CentroidsDiff(const MatX& old_centroids, const MatX& new_centroids) const {
 
-		std::vector<float> result(cluster_number);
+		VecX result(cluster_number, 1);
 
-		for (std::size_t i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
-			result[i_cluster] = calc_SquareDistance(old_centroids[i_cluster], new_centroids[i_cluster]);
+		for (int i_cluster = 0; i_cluster < cluster_number; ++i_cluster) {
+			result[i_cluster] = calc_SquareDistance(old_centroids.row(i_cluster), new_centroids.row(i_cluster));
 		}
 
 		return result;
+	}
+
+
+	bool is_same_centroid(const VecX& centroids_difference) const {
+		bool retval = true;
+
+		for (int i_cluster = 0; i_cluster < cluster_number; ++i_cluster)
+			retval = retval && (centroids_difference[i_cluster] <= CUTOFF_SIMILARITY);
+		return retval;
 	}
 
 
 	
-	const float calc_SquareDistance(const std::vector<float>& lhs, const std::vector<float>& rhs);
+	scalarT calc_SquareDistance(const VecX& lhs, const VecX& rhs) const;
 
 
 
-//	const float calc_EuclideanSquareDistance(const std::vector<float>& lhs, const std::vector<float>& rhs) {
-//		bool is_same_size = (lhs.size() == rhs.size());
-//		if (!is_same_size) {
-//			eout("Not same size, ", "lhs " + std::to_string(lhs.size()), "" + std::to_string(rhs.size()));
-//		}
-//		const std::size_t& iterate_num = lhs.size();
-//		float result = 0.0;
-//
-//		for (std::size_t index = 0; index < iterate_num; ++index) {
-//			result += (lhs[index] - rhs[index]) * (lhs[index] - rhs[index]);
-//		}
-//		return result;
-//	}
-
-
-	const std::vector<float> calc_GeometricCentroid(const std::vector<std::vector<float>>& data_in_cluster) {
-		const std::size_t& data_number = data_in_cluster.size();
-		const std::size_t& data_size = data_in_cluster.front().size();
-
-		std::vector<float> result(data_size, 0);
-		for (std::size_t data_index = 0; data_index < data_number; ++data_index) {
-			for (std::size_t index = 0; index < data_size; ++index) {
-				result[index] += data_in_cluster[data_index][index];
-			}
-		}
-		for (std::size_t index = 0; index < data_size; ++index) {
-			result[index] /= static_cast<float>(data_number);
-		}
-
-		return result;
-	}
 
 // ------------------------------------------------------------------------------------
 
 };
 
 
-// -- namespace cafemol::analysis -----------------------------------------------------
+// -- namespace CafeInLess::analysis -----------------------------------------------------
 
-template<>
-inline const float KMeans<KMeans_Flag::KMEANS_DIST_L2>::calc_SquareDistance(const std::vector<float>& lhs, const std::vector<float>& rhs) {
-	return CafeInLess::arithmetic::calc_SquareEuclideanDistance(lhs, rhs);
+
+
+template<KMeans_Flag DIST_FLAG, typename scalarT>
+template<KMeans_Flag Dist_Method>
+struct KMeans<DIST_FLAG, scalarT>::DistanceCalculator<KMeans_Flag::KMEANS_DIST_L2, Dist_Method> {
+
+	using vector_type = makers::Vector<scalarT, makers::Variable>;
+
+	static scalarT compute(const vector_type& lhs, const vector_type& rhs) {
+		const vector_type& relative_diff = lhs - rhs;
+		const scalarT& retval = makers::dot(relative_diff, relative_diff);
+		return retval;
+	}
+};
+
+
+template<KMeans_Flag DIST_FLAG, typename scalarT>
+scalarT KMeans<DIST_FLAG, scalarT>::calc_SquareDistance(const makers::Vector<scalarT, makers::Variable>& lhs, const makers::Vector<scalarT, makers::Variable>& rhs) const {
+	return DistanceCalculator<DIST_FLAG>::compute(lhs, rhs);
 }
 
 
+//template<typename scalarT>
+//inline scalarT KMeans_C_DIST_L2<scalarT>::calc_SquareDistance(const makers::Vector<scalarT, makers::Variable>& lhs, const makers::Vector<scalarT, makers::Variable>& rhs) const {
+//	const VecX& relative_diff = lhs - rhs;
+//	const scalarT& retval = makers::dot(relative_diff, relative_diff);
+//	return retval;
+//}
+
+
 
 }
 
-#endif /* K_MEANS_HPP */
+#endif /* CAFEINLESS_K_MEANS_HPP */

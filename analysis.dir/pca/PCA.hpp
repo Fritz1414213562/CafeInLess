@@ -1,9 +1,7 @@
 #ifndef PCA_HPP
 #define PCA_HPP
-#include<CafeInLess/IO.dir/ErrorMessage.hpp>
-#include<CafeInLess/IO.dir/StandardOutput.hpp>
-#include<Eigen/Core>
-#include<Eigen/Dense>
+#include<coffee-makers/Containers/Containers.hpp>
+#include<coffee-makers/Solver/Solver.hpp>
 #include<vector>
 #include<array>
 #include<string>
@@ -20,21 +18,20 @@ public:
 	~PCA() = default;
 
 
+	template<typename scalarT>
+	using MatX = makers::Matrix<scalarT, makers::Variable, makers::Variable>;
+	template<typename scalarT>
+	using VecX = makers::Matrix<scalarT, makers::Variable, makers::Variable>;
 
-	void run(const Eigen::MatrixXd& all_data) {
-		sout[BLOCK_SIZE];
-		sout["PCA starts.", BLOCK_SIZE]
+	template<typename scalarT>
+	void run(const MatX<scalarT>& all_data) {
+		const VecX<scalarT>& data_average = calc_DataAverage(all_data);
 
-		sout("Calculating the data average");
-		const Eigen::VectorXd& data_average = calc_DataAverage(all_data);
+		const MatX<scalarT>& average_cross_covariance_matrix = calc_AverageCrossCovarianceMatrix(all_data, data_average);
 
-		sout("Calculating the average Covariance Matrix");
-		const Eigen::MatrixXd& average_cross_covariance_matrix = calc_AverageCrossCovarianceMatrix(all_data, data_average);
+		makers::JacobiEigenSolver<MatX<scalarT>> eigen_solver(data_average.size());
 
-		sout("solving the eigen values and vectors");
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigen_solver(average_cross_covariance_matrix);
-		sout(".... Done");
-
+		eigen_solver.solve(average_cross_covariance_matrix);
 		contribution_rates_sum = eigen_solver.eigenvalues().sum();
 		contribution_rates = eigen_solver.eigenvalues() / contribution_rates_sum;
 		pca_axis_set = eigen_solver.eigenvectors();

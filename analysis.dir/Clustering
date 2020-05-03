@@ -14,8 +14,10 @@ namespace CafeInLess::analysis {
 
 // alias
 
-template<KMeans_Flag Dist_Flag>
-using ClusteringDevice_KMeans = ClusteringDevice<KMeans<Dist_Flag>>;
+template<KMeans_Flag Dist_Flag, typename scalarT>
+using ClusteringDevice_KMeans = ClusteringDevice<KMeans<Dist_Flag, scalarT>>;
+template<typename scalarT>
+using CD_KMeans_L2 = ClusteringDevice_KMeans<KMEANS_DIST_L2, scalarT>;
 
 
 }

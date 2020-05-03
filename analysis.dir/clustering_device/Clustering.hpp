@@ -1,6 +1,7 @@
 #ifndef CAFEINLESS_CLUSTERING_HPP
 #define CAFEINLESS_CLUSTERING_HPP
-#include<CafeInLess/analysis.dir/clustering_device/ClusteringDevice_interface.hpp>
+#include<CafeInLess/analysis.dir/clustering_device/ClusteringDevice_Base.hpp>
+#include<coffee-makers/Containers/Containers.hpp>
 #include<type_traits>
 #include<typeinfo>
 #include<vector>
@@ -8,13 +9,18 @@
 
 namespace CafeInLess::analysis {
 
-template<class T, bool is_extended = std::is_base_of<ClusteringDeviceInterface<T>, T>::value>
+template<class T, bool is_extended = std::is_base_of<ClusteringDeviceBase<T>, T>::value>
 class ClusteringDevice {
-	static_assert(is_extended, "ClusteringDevice_Interface  is not extended.");
+	static_assert(is_extended, "ClusteringDevice_Base is not extended.");
 };
 
 template<class T>
 class ClusteringDevice<T, true> {
+
+	template<typename scalarT>
+	using MatX = makers::Matrix<scalarT, makers::Variable, makers::Variable>;
+
+//	using ScalarType = typename T::scalar_type;
 
 public:
 	
@@ -24,7 +30,8 @@ public:
 	}
 	~ClusteringDevice() = default;
 
-	const std::vector<std::vector<std::size_t>> run(const std::vector<std::vector<float>>& all_data) {
+	template<typename scalarT>
+	std::vector<std::vector<int>> run(const MatX<scalarT>& all_data) {
 		return _object->run(all_data);
 	}
 

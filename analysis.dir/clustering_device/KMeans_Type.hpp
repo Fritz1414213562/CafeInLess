@@ -1,5 +1,5 @@
-#ifndef KMEANS_TYPE_HPP
-#define KMEANS_TYPE_HPP
+#ifndef CAFEINLESS_KMEANS_TYPE_HPP
+#define CAFEINLESS_KMEANS_TYPE_HPP
 
 
 namespace cafemol::analysis {
@@ -56,4 +56,4 @@ private:
 }
 
 
-#endif /* KMEANS_TYPE_HPP */
+#endif /* CAFEINLESS_KMEANS_TYPE_HPP */
