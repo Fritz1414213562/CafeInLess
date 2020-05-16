@@ -1,5 +1,6 @@
 #ifndef CAFEINLESS_FILE_MANAGE_HPP
 #define CAFEINLESS_FILE_MANAGE_HPP
+#include<iostream>
 #include<string>
 #include<array>
 #include<list>
