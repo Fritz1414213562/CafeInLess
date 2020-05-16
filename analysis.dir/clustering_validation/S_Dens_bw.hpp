@@ -2,8 +2,9 @@
 #define CAFEINLESS_S_DENS_BW_HPP
 #include<CafeInLess/analysis.dir/clustering_validation/S_Dens_bw_Flag.hpp>
 #include<CafeInLess/analysis.dir/clustering_validation/Validation_Base.hpp>
-#include<coffee-makers/Containers/Containers.hpp>
 #include<CafeInLess/util.dir/arithmetic>
+#include<coffee-makers/Containers/Containers.hpp>
+#include<coffee-makers/utility/utility.hpp>
 #include<vector>
 #include<string>
 #include<cmath>
@@ -377,7 +378,7 @@ template<>
 template<typename scalarT>
 inline scalarT S_Dens_bw<CafeInLess::analysis::S_DBW_DIST_L2>::calc_Distance(const VecX<scalarT>& lhs, const VecX<scalarT>& rhs) const {
 	const VecX<scalarT>& relative_diff = lhs - rhs;
-	const scalarT retval = std::sqrt(makers::dot(relative_diff, relative_diff));
+	const scalarT retval = makers::distance(relative_diff);
 	return retval;
 }
 

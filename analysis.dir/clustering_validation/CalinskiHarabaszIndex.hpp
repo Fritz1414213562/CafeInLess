@@ -2,8 +2,9 @@
 #define CAFEINLESS_CALINSKI_HARABASZ_INDEX_HPP
 #include<CafeInLess/analysis.dir/clustering_validation/Validation_Base.hpp>
 #include<CafeInLess/analysis.dir/clustering_validation/CalinskiHarabaszIndex_Flag.hpp>
-#include<coffee-makers/Containers/Containers.hpp>
 #include<CafeInLess/util.dir/arithmetic>
+#include<coffee-makers/Containers/Containers.hpp>
+#include<coffee-makers/utility/utility.hpp>
 #include<vector>
 #include<string>
 
@@ -181,7 +182,7 @@ template<>
 template<typename scalarT>
 inline scalarT CalinskiHarabaszIndex<CH_DIST_L2>::calc_SquareDistance(const VecX<scalarT>& lhs, const VecX<scalarT>& rhs) const {
 	const VecX<scalarT>& relative_diff = lhs - rhs;
-	const scalarT& retval = makers::dot(relative_diff, relative_diff);
+	const scalarT& retval = makers::square_distance(relative_diff);
 	return retval;
 }
 

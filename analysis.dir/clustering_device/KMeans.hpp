@@ -3,6 +3,7 @@
 #include<CafeInLess/analysis.dir/clustering_device/KMeans_Flag.hpp>
 #include<CafeInLess/analysis.dir/clustering_device/ClusteringDevice_Base.hpp>
 #include<coffee-makers/Containers/Containers.hpp>
+#include<coffee-makers/utility/utility.hpp>
 #include<vector>
 #include<random>
 #include<string>
@@ -326,7 +327,7 @@ struct KMeans<DIST_FLAG, scalarT>::DistanceCalculator<KMeans_Flag::KMEANS_DIST_L
 
 	static scalarT compute(const vector_type& lhs, const vector_type& rhs) {
 		const vector_type& relative_diff = lhs - rhs;
-		const scalarT& retval = makers::dot(relative_diff, relative_diff);
+		const scalarT& retval = makers::square_distance(relative_diff);
 		return retval;
 	}
 };
