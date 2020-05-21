@@ -287,6 +287,10 @@ inline std::vector<int> KMeans<DIST_FLAG, scalarT>::choose_DistantIndices(
 			for (int chosen_cluster_id = 0; chosen_cluster_id < i_cluster; ++chosen_cluster_id) {
 				const VecX& chosen_datum = all_data.row(result[chosen_cluster_id]);
 				const scalarT& data_dist = calc_SquareDistance(datum, chosen_datum);
+				if (data_dist == 0.) {
+					sum_dist = 0.0;
+					break;
+				}
 				sum_dist += static_cast<scalarT>(data_dist);
 			}
 			probabilities[datum_index] = sum_dist;
