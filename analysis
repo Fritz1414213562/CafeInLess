@@ -2,5 +2,6 @@
 #define CAFEINLESS_ANALYSIS
 #include<CafeInLess/analysis.dir/Clustering>
 #include<CafeInLess/analysis.dir/Validation>
+#include<CafeInLess/analysis.dir/PrincipalComponentAnalysis>
 
 #endif /* CAFEINLESS_ANALYSIS */
