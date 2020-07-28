@@ -1,6 +1,5 @@
 #ifndef CAFEINLESS_MATRIX_FILE_PARSER_HPP
 #define CAFEINLESS_MATRIX_FILE_PARSER_HPP
-#include<CafeInLess/IO.dir/ErrorMessage.hpp>
 #include<iostream>
 #include<fstream>
 #include<vector>
@@ -29,12 +28,11 @@ protected:
 	void close_File() {if (input_file.is_open()) input_file.close();}
 
 
-
-
 	void open_File() {
 		close_File();
 		input_file.open(input_name, std::ios::in | std::ios::binary);
-		if (!input_file.is_open()) eout("The file, " + input_name + " could not be found.");
+		if (!input_file.is_open()) 
+			throw std::runtime_error("FileOpenError: The file, " + input_name + " could not be found.");
 	}
 
 	template<typename T>
@@ -46,24 +44,20 @@ protected:
 
 
 	std::string read_Block() {
-		std::int32_t block_size;
+		std::int64_t block_size;
 		std::vector<char> buffer;
 
 		input_file.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	//	std::cout << block_size << std::endl;
 		buffer.resize(block_size);
 		input_file.read(buffer.data(), block_size);
 
-		std::int32_t check_block_size;
+		std::int64_t check_block_size;
 		input_file.read(reinterpret_cast<char*>(&check_block_size), sizeof(check_block_size));
 	//	std::cout << check_block_size << std::endl;
 
-		if (block_size != check_block_size) {
-			eout(
-			"Left Block size is not consistent with to Right one",
-			"Left -> " + std::to_string(block_size),
-			"Right -> "+ std::to_string(check_block_size));
-		}
+		if (block_size != check_block_size)
+			throw std::runtime_error(
+			"Left Block size is not consistent with to Right one");
 		std::string result(buffer.begin(), buffer.end());
 
 		return result;
@@ -74,12 +68,12 @@ protected:
 		std::string mat_shape_block = read_Block();
 		int row_size = read_Binary_as<int>(&mat_shape_block.at(0));
 		int col_size = read_Binary_as<int>(&mat_shape_block.at(sizeof(int)));
+	//	std::cout << row_size << " " << col_size << std::endl;
 		std::array<int, 2> result = {row_size, col_size};
 		return result;
 	}
 
 
-	CafeInLess::IO::Error_Output eout = CafeInLess::IO::Error_Output();
 	std::string input_name;
 	std::ifstream input_file;
 
